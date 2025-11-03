@@ -12,7 +12,7 @@
   <PropertyGroup>
     
     <PackageId>FriendLib</PackageId>
-    <PackageVersion>1.0.0</PackageVersion>
+    <PackageVersion>1.0.1</PackageVersion>
     <Description>FriendLib is depended package using with the FriendAnalyzer package</Description>
     <PackageTags>FriendLib, analyzers</PackageTags>
     <Title>FriendLib</Title>
@@ -20,6 +20,10 @@
     <Authors>LeaLan</Authors>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <PackageIcon>icon.png</PackageIcon>
+    <RepositoryUrl>https://github.com/VadimLL/cs_friends</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageProjectUrl>https://github.com/VadimLL/cs_friends</PackageProjectUrl>
     
   </PropertyGroup>
 
@@ -30,5 +34,12 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\..\..\icon.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
 
 </Project>

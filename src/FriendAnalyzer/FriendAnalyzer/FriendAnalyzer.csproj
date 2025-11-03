@@ -17,14 +17,13 @@
   <PropertyGroup>
     
     <PackageId>Friend.Analyzer</PackageId>
-    <PackageVersion>1.0.0</PackageVersion>
+    <PackageVersion>1.0.1</PackageVersion>
     <Authors>LeaLan</Authors>
     <AssemblyName>Friend.Analyzer</AssemblyName>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
-    <!--<PackageProjectUrl></PackageProjectUrl>
-    <RepositoryUrl></RepositoryUrl>
+    <PackageProjectUrl>https://github.com/VadimLL/cs_friends</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/VadimLL/cs_friends</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <PackageIcon>icon.png</PackageIcon>-->
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <Description>A Roslyn analyzer to enforce a friend feature in C#</Description>
     <PackageTags>FriendAnalyzer, analyzers</PackageTags>
@@ -43,6 +42,13 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\..\..\icon.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
   
   <ItemGroup>
     <PackageReference Include="FriendLib" Version="1.0.0" />
@@ -54,6 +60,7 @@
 
   <PropertyGroup>
     <TargetsForTfmSpecificBuildOutput> $(TargetsForTfmSpecificBuildOutput);CopyProjectReferencesToPackage</TargetsForTfmSpecificBuildOutput>
+    <Copyright>LeaLan</Copyright>
   </PropertyGroup>
 
   <!-- Thank you https://www.meziantou.net/packaging-a-roslyn-analyzer-with-nuget-dependencies.htm -->
