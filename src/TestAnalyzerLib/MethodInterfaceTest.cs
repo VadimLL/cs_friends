@@ -1,0 +1,38 @@
+﻿using FriendLib;
+
+namespace TestAnalyzerLib;
+
+file interface IMe
+{    
+    [OnlyYou(typeof(MyFriend), nameof(MyFriend.AcceptMoney))]
+    decimal TakeMyHalfMoney();
+
+    [OnlyYou(typeof(MyFriend), nameof(MyFriend.AcceptMoney))]
+    static void StaticMethod() { }
+}
+
+file class Me : IMe
+{
+    public decimal Money { get; private set; } = 100;
+    public decimal TakeMyHalfMoney()
+    {
+        decimal half = Money / 2;
+        Money -= half;
+        return half;
+    }
+}
+
+file class MyFriend
+{
+    public void AcceptMoney(in Me me)
+    {
+        Money += me.TakeMyHalfMoney(); // ok
+        IMe.StaticMethod(); // ok
+    }
+    public void CantAcceptMoney(in Me me)
+    {
+        Money += me.TakeMyHalfMoney(); // err? not emplemented !!! а нужно ли?
+        IMe.StaticMethod(); // err
+    }
+    public decimal Money { get; private set; } = -40;
+}

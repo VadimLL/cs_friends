@@ -1,0 +1,34 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+
+    <Nullable>enable</Nullable>
+    <LangVersion>Latest</LangVersion>
+
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+  </PropertyGroup>  
+  
+  <PropertyGroup>
+    
+    <PackageId>FriendLib</PackageId>
+    <PackageVersion>1.0.0</PackageVersion>
+    <Description>FriendLib is depended package using with the FriendAnalyzer package</Description>
+    <PackageTags>FriendLib, analyzers</PackageTags>
+    <Title>FriendLib</Title>
+    <Copyright>LeaLan</Copyright>
+    <Authors>LeaLan</Authors>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+</Project>
