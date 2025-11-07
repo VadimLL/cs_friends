@@ -66,6 +66,9 @@ public class FriendAnalyzerAnalyzer : DiagnosticAnalyzer
 
         context.RegisterSyntaxNodeAction(analyzePostfixUnary, SyntaxKind.PostIncrementExpression);
         context.RegisterSyntaxNodeAction(analyzePostfixUnary, SyntaxKind.PostDecrementExpression);
+
+        //context.RegisterSyntaxNodeAction(analyzePropertyAssignment, SyntaxKind.FieldExpression);
+        //context.RegisterSyntaxNodeAction(analyzeInvocation, SyntaxKind.IndexExpression);
     }
 
     #endregion DiagnosticAnalyzer implementation
@@ -77,7 +80,7 @@ public class FriendAnalyzerAnalyzer : DiagnosticAnalyzer
     static readonly DiagnosticDescriptor methodRule = new DiagnosticDescriptor(
         id: "FAM_001",
         title: "Method should be a friend",
-        messageFormat: "The '{0}' is not a friend for the '{1}' method.",
+        messageFormat: "The '{0}' is not a friend for the '{1}' member.",
         category: "Usage",
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true,
@@ -108,7 +111,7 @@ public class FriendAnalyzerAnalyzer : DiagnosticAnalyzer
     static readonly DiagnosticDescriptor propertyRule = new DiagnosticDescriptor(
         id: "FAP_001",
         title: "Property should be a friend",
-        messageFormat: "The '{0}' is not a friend for the '{1}' property.",
+        messageFormat: "The '{0}' is not a friend for the '{1}' member.",
         category: "Usage",
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true,
@@ -188,7 +191,7 @@ public class FriendAnalyzerAnalyzer : DiagnosticAnalyzer
     #region helpers
 
     static void analyzeOperation(
-        in SyntaxNodeAnalysisContext context,
+        SyntaxNodeAnalysisContext context,
         in DiagnosticDescriptor rule,
         in ISymbol? symbol,
         in SyntaxNode operationNode)
@@ -264,17 +267,19 @@ public class FriendAnalyzerAnalyzer : DiagnosticAnalyzer
             .Where(static a => a.AttributeClass?.Name is OnlyYouAttribute);
         if (attrsT.Count() > 0)
         {
-            if(analyzeWhenType(context, typeRule, symbol, operationNode, attrsT))
+            if (analyzeWhenType(context, typeRule, symbol, operationNode, attrsT))
             {
                 return;
             }
         }
 
-        var attrsO = symbol is IMethodSymbol
-            ? symbol.GetAttributes()
-                    .Where(static a => a.AttributeClass?.Name is OnlyYouAttribute or OnlyAliasAttribute)
-            : symbol.GetAttributes()
-                    .Where(static a => a.AttributeClass?.Name == OnlyYouAttribute);
+        //var attrsO = symbol is IMethodSymbol
+        //    ? symbol.GetAttributes()
+        //            .Where(static a => a.AttributeClass?.Name is OnlyYouAttribute or OnlyAliasAttribute)
+        //    : symbol.GetAttributes()
+        //            .Where(static a => a.AttributeClass?.Name == OnlyYouAttribute);
+        var attrsO = symbol.GetAttributes()
+                    .Where(static a => a.AttributeClass?.Name is OnlyYouAttribute or OnlyAliasAttribute);
         if (attrsO.Count() == 0)
         {
             return;
@@ -297,24 +302,52 @@ public class FriendAnalyzerAnalyzer : DiagnosticAnalyzer
 
         string outerMethodName = outerMethod.Identifier.Text;
 
-        attrsO = attrsO.Where(a => ReferenceEquals(a.ConstructorArguments[0].Value, outerClassSymbol));
-        if (attrsO.Count() == 0) // outerClass is not "Only" type
+        attrsO = attrsO.Where(a =>
+            {
+                var attributeClass = a.AttributeClass!;
+                if (attributeClass.IsGenericType)
+                {
+                    INamedTypeSymbol genericType = (attributeClass.TypeArguments.First() as INamedTypeSymbol)!;
+                    return genericType.ToDisplayString() == outerClassSymbol.ToDisplayString();
+                    //return ReferenceEquals(genericType, outerClassSymbol);
+                }
+                return ReferenceEquals(a.ConstructorArguments[0].Value, outerClassSymbol);
+            });
+
+        IEnumerable<(AttributeData Data, INamedTypeSymbol Class, bool IsGeneric)> attrInfosO1
+            = attrsO.Select(a => (a, a.AttributeClass!, a.AttributeClass!.IsGenericType));
+        attrInfosO1 = attrInfosO1.Where(a => {
+                if (a.IsGeneric)
+                {
+                    var genericType = (a.Class.TypeArguments.First() as INamedTypeSymbol)!;
+                    //return ReferenceEquals(genericType, outerClassSymbol);
+                    return genericType.ToDisplayString() == outerClassSymbol.ToDisplayString();
+                }
+
+                return ReferenceEquals(a.Data.ConstructorArguments[0].Value, outerClassSymbol);
+            });
+
+        if (attrInfosO1.Count() == 0) // outerClass is not "Only" type
         {
             reportDiagnostic(rule, context, operationNode, symbol.Name, outerMethodName);
             return;
         }
 
-        attrsO = attrsO.Where(static a => a.ConstructorArguments[1].Values.Count() > 0);
-        if (attrsO.Count() == 0)
+        attrInfosO1 = attrInfosO1.Where(static a => a.IsGeneric
+                        ? a.Data.ConstructorArguments[0].Values.Count() > 0
+                        : a.Data.ConstructorArguments[1].Values.Count() > 0);
+        if (attrInfosO1.Count() == 0)
         {
             // => all members of the outerClass is friends (i.e. allowed)
             return;
         }
 
-        var attrsOU = attrsO.Where(static a => a.AttributeClass?.Name == OnlyYouAttribute);
+        var attrsOU = attrInfosO1.Where(static a => a.Class?.Name == OnlyYouAttribute);
         bool isAllowByOU = true; // is allow (by attrsOU) to invoke our member (symbol)?
-        if (attrsOU.SelectMany(static attr => attr.ConstructorArguments[1].Values)
-                 .All(v => v.Value?.ToString() != outerMethodName))
+        if (attrsOU.SelectMany(static a => a.IsGeneric
+                    ? a.Data.ConstructorArguments[0].Values
+                    : a.Data.ConstructorArguments[1].Values)
+                .All(v => v.Value?.ToString() != outerMethodName))
         {
             isAllowByOU = false;
         }
@@ -322,22 +355,22 @@ public class FriendAnalyzerAnalyzer : DiagnosticAnalyzer
         bool isAllowByOA = true;
         do
         {
-            if (symbol is not IMethodSymbol)
-            {
-                isAllowByOA = false;
-                break;
-            }
+            //if (symbol is not IMethodSymbol)
+            //{
+            //    isAllowByOA = false;
+            //    break;
+            //}
 
-            var attrsOA = attrsO.Where(static a => a.AttributeClass?.Name == OnlyAliasAttribute);
-            if(attrsOA.Count() == 0)
+            var attrInfosOA = attrInfosO1.Where(static a => a.Class?.Name == OnlyAliasAttribute);
+            if(attrInfosOA.Count() == 0)
             {
                 isAllowByOA = false;
                 break;
             }
 
             // [OnlyAlias(type, aliases)]
-            var aliases = attrsOA
-                .SelectMany(attr => attr.ConstructorArguments[1].Values)
+            var aliases = attrInfosOA
+                .SelectMany(a => a.IsGeneric ? a.Data.ConstructorArguments[0].Values : a.Data.ConstructorArguments[1].Values)
                 .Select(a => a.Value?.ToString())
                 .Where(a => a is not null);
             if (outerMethod.AttributeLists.Count == 0)

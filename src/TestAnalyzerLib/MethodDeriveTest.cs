@@ -27,8 +27,8 @@ file class Me2 : Me
 {
     public override decimal TakeMyHalfMoney()
     {
-        base.TakeMyHalfMoney2(); // может нужно err? !!!
-        TakeMyHalfMoney2(); // not emplemented !!! а нужно ли?
+        base.TakeMyHalfMoney2(); // maybe need err? !!!
+        TakeMyHalfMoney2(); // not emplemented !!! is it necessary?
         return base.TakeMyHalfMoney(); // ok
     }
 }

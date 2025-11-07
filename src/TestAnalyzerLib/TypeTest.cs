@@ -9,11 +9,11 @@ file class Me
 
     public void Method1() { }
 
-    [OnlyYou(typeof(MyFriend), nameof(MyFriend.CanInvoke1))]
+    [OnlyYou<MyFriend>(nameof(MyFriend.CanInvoke1))]
     public void Method2() { }
     
-    [OnlyYou(typeof(NotMyFriend), nameof(MyFriend.CanInvoke1))]
-    [OnlyYou(typeof(NotMyFriend), nameof(NotMyFriend.Some1))] // no effect !!! запретить атрибут правилом? 
+    [OnlyYou<NotMyFriend>(nameof(MyFriend.CanInvoke1))]
+    [OnlyYou<NotMyFriend>(nameof(NotMyFriend.Some1))] // no effect !!! prohibit the attribute with a rule? 
     public void Method3() { }
 }
 

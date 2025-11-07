@@ -31,7 +31,7 @@ file class MyFriend
     }
     public void CantAcceptMoney(in Me me)
     {
-        Money += me.TakeMyHalfMoney(); // err? not emplemented !!! а нужно ли?
+        Money += me.TakeMyHalfMoney(); // err? not emplemented !!! is it necessary?
         IMe.StaticMethod(); // err
     }
     public decimal Money { get; private set; } = -40;

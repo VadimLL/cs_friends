@@ -6,8 +6,7 @@ namespace TestAnalyzerLib
     {
         public decimal Money { get; private set; } = 100;
 
-        [OnlyYou(typeof(TestAnalyzerLib1.MyFriend),
-            nameof(TestAnalyzerLib1.MyFriend.AcceptMoney))]
+        [OnlyYou<TestAnalyzerLib1.MyFriend>(nameof(TestAnalyzerLib1.MyFriend.AcceptMoney))]
         public decimal TakeMyHalfMoney1()
         {
             decimal half = Money / 2;
@@ -15,8 +14,7 @@ namespace TestAnalyzerLib
             return half;
         }
 
-        [OnlyYou(typeof(TestAnalyzerLib2.MyFriend),
-            nameof(TestAnalyzerLib2.MyFriend.AcceptMoney))]
+        [OnlyYou<TestAnalyzerLib2.MyFriend>(nameof(TestAnalyzerLib2.MyFriend.AcceptMoney))]
         public decimal TakeMyHalfMoney2()
         {
             decimal half = Money / 2;
